@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  mysql_register:
+    container_name: mysql_register_devfood
+    image: mysql:8.0.32
+    environment:
+      MYSQL_DATABASE: devfood
+      MYSQL_USER: register
+      MYSQL_PASSWORD: register
+      MYSQL_ROOT_PASSWORD: root 
+    ports:
+      - "3306:3306"
+
