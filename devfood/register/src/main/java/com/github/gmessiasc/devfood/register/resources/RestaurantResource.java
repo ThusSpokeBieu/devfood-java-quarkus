@@ -16,10 +16,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
 import com.github.gmessiasc.devfood.register.domain.entities.Dish;
 import com.github.gmessiasc.devfood.register.domain.entities.Restaurant;
 
 @Path("/restaurants")
+@Tag(name = "Restaurants")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class RestaurantResource {
@@ -79,6 +82,7 @@ public class RestaurantResource {
 
     @GET
     @Path("{restaurantId}/dish/")
+    @Tag(name = "Dishes")
     public Response getDishes(@PathParam("restaurantId") Long restaurantId) {
         Optional<Restaurant> restaurantOptional = Restaurant.findByIdOptional(restaurantId);
 
@@ -93,6 +97,7 @@ public class RestaurantResource {
 
     @POST
     @Path("{restaurantId}/dish/")
+    @Tag(name = "Dishes")
     @Transactional
     public Response addDish(
         @PathParam("restaurantId") Long restaurantId,
@@ -115,6 +120,7 @@ public class RestaurantResource {
 
     @PUT
     @Path("{restaurantId}/dish/{dishId}")
+    @Tag(name = "Dishes")
     @Transactional
     public Response updateDish(
         @PathParam("restaurantId") Long restaurantId,
@@ -141,6 +147,7 @@ public class RestaurantResource {
 
     @DELETE
     @Path("{restaurantId}/dish/{dishId}")
+    @Tag(name = "Dishes")
     @Transactional
     public Response updateDish(
         @PathParam("restaurantId") Long restaurantId,
