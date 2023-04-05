@@ -1,7 +1,11 @@
 package com.github.gmessiasc.devfood.register.resources;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -18,8 +22,10 @@ import javax.ws.rs.core.Response.Status;
 
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import com.github.gmessiasc.devfood.register.domain.dto.RestaurantDto;
 import com.github.gmessiasc.devfood.register.domain.entities.Dish;
 import com.github.gmessiasc.devfood.register.domain.entities.Restaurant;
+import com.github.gmessiasc.devfood.register.domain.mappers.RestaurantMapper;
 
 @Path("/restaurants")
 @Tag(name = "Restaurants")
@@ -27,21 +33,40 @@ import com.github.gmessiasc.devfood.register.domain.entities.Restaurant;
 @Consumes(MediaType.APPLICATION_JSON)
 public class RestaurantResource {
     
+    @Inject
+    RestaurantMapper restaurantMapper;
+
     @GET
     public Response getRestaurants() {
+        List<RestaurantDto> restaurantDtos = Restaurant.listAll().stream()
+                                                .filter(restaurant -> restaurant instanceof Restaurant)
+                                                .map(restaurant -> restaurantMapper.toDto((Restaurant) restaurant))
+                                                .collect(Collectors.toList());
         return Response.status(Status.OK)
-                    .entity(Restaurant.listAll())
+                    .entity(restaurantDtos)
+                    .build();
+    }
+
+    @GET
+    @Path("id")
+    public Response getRestaurantById(@PathParam("id") Long id) {
+        Optional<Restaurant> restaurantOptional = Restaurant.findByIdOptional(id);
+            
+        if(restaurantOptional.isEmpty()){
+            throw new NotFoundException();
+        }
+
+        Restaurant restaurant = restaurantOptional.get();
+        RestaurantDto dto = restaurantMapper.toDto(restaurant);
+        return Response.status(Status.OK)
+                    .entity(dto)
                     .build();
     }
 
     @POST
     @Transactional
-    public Response addRestaurant(Restaurant dto) {
-        Restaurant restaurant = new Restaurant();
-        restaurant.cnpj = dto.cnpj;
-        restaurant.name = dto.name;
-        restaurant.owner = dto.owner;
-        restaurant.localization = dto.localization;
+    public Response addRestaurant(RestaurantDto dto) {
+        Restaurant restaurant = restaurantMapper.toRestaurant(dto);
         restaurant.persist();
         return Response.status(Status.CREATED).entity(restaurant).build();
     }

@@ -7,6 +7,7 @@ import com.github.database.rider.cdi.api.DBRider;
 import com.github.database.rider.core.api.configuration.DBUnit;
 import com.github.database.rider.core.api.configuration.Orthography;
 import com.github.database.rider.core.api.dataset.DataSet;
+import javax.ws.rs.core.Response.Status;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -24,8 +25,8 @@ public class RestaurantResourceTest {
         String result = given()
                         .when().get("/restaurants")
                         .then()
-                        .statusCode(200)
+                        .statusCode(Status.OK.getStatusCode())
                         .extract().asString();
-        Approvals.verifyJson(result);
+       Approvals.verifyJson(result);
     }
 }
