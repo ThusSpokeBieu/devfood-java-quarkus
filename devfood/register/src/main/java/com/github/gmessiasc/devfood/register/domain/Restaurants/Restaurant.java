@@ -1,4 +1,4 @@
-package com.github.gmessiasc.devfood.register.domain.entities;
+package com.github.gmessiasc.devfood.register.domain.Restaurants;
 
 import java.util.Date;
 
@@ -9,14 +9,19 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.github.gmessiasc.devfood.register.domain.Localizations.Localization;
+
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 @Entity
-@Table(name = "entity_restaurant")
+@Table(name = "entity_restaurant", 
+        uniqueConstraints = 
+            @UniqueConstraint(columnNames = {"cnpj", "name"}) )
 public class Restaurant extends PanacheEntityBase {
     
     @Id

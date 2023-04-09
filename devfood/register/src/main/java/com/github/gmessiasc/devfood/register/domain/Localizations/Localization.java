@@ -1,4 +1,4 @@
-package com.github.gmessiasc.devfood.register.domain.entities;
+package com.github.gmessiasc.devfood.register.domain.Localizations;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

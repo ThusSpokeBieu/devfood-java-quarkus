@@ -1,4 +1,4 @@
-package com.github.gmessiasc.devfood.register.domain.dto;
+package com.github.gmessiasc.devfood.register.domain.Localizations;
 
 public class LocalizationDto {
     

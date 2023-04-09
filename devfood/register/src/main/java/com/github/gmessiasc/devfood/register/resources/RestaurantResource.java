@@ -1,12 +1,12 @@
 package com.github.gmessiasc.devfood.register.resources;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -22,10 +22,14 @@ import javax.ws.rs.core.Response.Status;
 
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import com.github.gmessiasc.devfood.register.domain.dto.RestaurantDto;
-import com.github.gmessiasc.devfood.register.domain.entities.Dish;
-import com.github.gmessiasc.devfood.register.domain.entities.Restaurant;
-import com.github.gmessiasc.devfood.register.domain.mappers.RestaurantMapper;
+import com.github.gmessiasc.devfood.register.domain.Dishes.DishDto;
+import com.github.gmessiasc.devfood.register.domain.Dishes.DishUpdateDto;
+import com.github.gmessiasc.devfood.register.domain.Restaurants.RestaurantDtoCreate;
+import com.github.gmessiasc.devfood.register.domain.Dishes.Dish;
+import com.github.gmessiasc.devfood.register.domain.Restaurants.Restaurant;
+import com.github.gmessiasc.devfood.register.domain.Restaurants.RestaurantDto;
+import com.github.gmessiasc.devfood.register.domain.Dishes.DishMapper;
+import com.github.gmessiasc.devfood.register.domain.Restaurants.RestaurantMapper;
 
 @Path("/restaurants")
 @Tag(name = "Restaurants")
@@ -35,6 +39,10 @@ public class RestaurantResource {
     
     @Inject
     RestaurantMapper restaurantMapper;
+
+
+    @Inject
+    DishMapper dishMapper;
 
     @GET
     public Response getRestaurants() {
@@ -48,8 +56,10 @@ public class RestaurantResource {
     }
 
     @GET
-    @Path("id")
-    public Response getRestaurantById(@PathParam("id") Long id) {
+    @Path("{id}")
+    public Response getRestaurantById(
+        @PathParam("id") Long id
+        ) {
         Optional<Restaurant> restaurantOptional = Restaurant.findByIdOptional(id);
             
         if(restaurantOptional.isEmpty()){
@@ -65,7 +75,7 @@ public class RestaurantResource {
 
     @POST
     @Transactional
-    public Response addRestaurant(RestaurantDto dto) {
+    public Response addRestaurant(@Valid RestaurantDtoCreate dto) {
         Restaurant restaurant = restaurantMapper.toRestaurant(dto);
         restaurant.persist();
         return Response.status(Status.CREATED).entity(restaurant).build();
@@ -76,7 +86,7 @@ public class RestaurantResource {
     @Transactional
     public Response updateRestaurant(
         @PathParam("id") Long id, 
-        Restaurant dto) {
+        RestaurantDtoCreate dto) {
             Optional<Restaurant> restaurantOptional = Restaurant.findByIdOptional(id);
             
             if(restaurantOptional.isEmpty()){
@@ -84,7 +94,7 @@ public class RestaurantResource {
             }
 
             Restaurant restaurant = restaurantOptional.get();
-            restaurant.name = dto.name;
+            restaurantMapper.update(dto, restaurant);
             restaurant.persist();
 
             return Response.status(Status.OK).build();
@@ -111,12 +121,19 @@ public class RestaurantResource {
     public Response getDishes(@PathParam("restaurantId") Long restaurantId) {
         Optional<Restaurant> restaurantOptional = Restaurant.findByIdOptional(restaurantId);
 
-        if(restaurantOptional.isEmpty()) {
+        if (restaurantOptional.isEmpty()) {
             throw new NotFoundException("This restaurant doesn't exists");
         }
 
+        List<Dish> dishes = Dish.list("restaurant", restaurantOptional.get());
+
+        List<DishDto> dishesDto = dishes.stream()
+                                    .filter(dish ->  dish instanceof Dish)
+                                    .map(dish -> dishMapper.toDto(dish))
+                                    .collect(Collectors.toList());
+
         return Response.status(Status.OK)
-                    .entity(Dish.list("restaurant", restaurantOptional.get()))
+                    .entity(dishesDto)
                     .build();
     }
 
@@ -126,18 +143,15 @@ public class RestaurantResource {
     @Transactional
     public Response addDish(
         @PathParam("restaurantId") Long restaurantId,
-        Dish dto ) {
-            Optional<Restaurant> restaurantOptional = Restaurant.findByIdOptional(restaurantId);
+        DishDto dto ) {
+            Optional<Restaurant> restaurantOptional = Restaurant
+                                                        .findByIdOptional(restaurantId);
 
             if(restaurantOptional.isEmpty()) {
                 throw new NotFoundException("This restaurant doesn't exists");
             }
 
-            Dish dish = new Dish();
-            dish.name = dto.name;
-            dish.description = dto.description;
-            dish.price = dto.price;
-            dish.restaurant = restaurantOptional.get();
+            Dish dish = dishMapper.toDish(dto);
             dish.persist();
 
             return Response.status(Status.CREATED).entity(dish).build();
@@ -150,7 +164,7 @@ public class RestaurantResource {
     public Response updateDish(
         @PathParam("restaurantId") Long restaurantId,
         @PathParam("id") Long id,
-        Dish dto ) {
+        DishUpdateDto dto ) {
             Optional<Restaurant> restaurantOptional = Restaurant.findByIdOptional(restaurantId);
 
             if(restaurantOptional.isEmpty()) {
@@ -164,7 +178,7 @@ public class RestaurantResource {
             }
 
             Dish dish = dishOptional.get();
-            dish.price = dto.price;
+            dishMapper.updateDishFromDto(dto, dish); 
             dish.persist();
 
             return Response.status(Status.OK).entity(dish).build();
@@ -186,7 +200,7 @@ public class RestaurantResource {
             Optional<Dish> dishOptional = Dish.findByIdOptional(id);
             
             dishOptional.ifPresentOrElse(Dish::delete, () -> {
-                throw new NotFoundException("This dish doens't exists");
+                throw new NotFoundException("This dish doesn't exists");
             });
 
             return Response.status(Status.OK).build();

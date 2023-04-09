@@ -27,6 +27,7 @@ public class RestaurantResourceTest {
                         .then()
                         .statusCode(Status.OK.getStatusCode())
                         .extract().asString();
-       Approvals.verifyJson(result);
+
+        Approvals.verifyJson(result);
     }
 }
