@@ -1,0 +1,12 @@
+entity_restaurant:
+  - ID: 123
+    OWNER: "Keycloak id"
+    NAME: "New Restaurant 1" 
+
+  - ID: 124
+    OWNER: "Keycloak id"
+    NAME: "New Restaurant 2"
+
+  - ID: 125
+    OWNER: "Keycloak Id"
+    NAME: "New Restaurant 3"

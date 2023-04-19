@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 services:
   mysql_register:
     container_name: mysql_register_devfood
@@ -7,7 +7,15 @@ services:
       MYSQL_DATABASE: devfood
       MYSQL_USER: register
       MYSQL_PASSWORD: register
-      MYSQL_ROOT_PASSWORD: root 
+      MYSQL_ROOT_PASSWORD: root
     ports:
       - "3306:3306"
 
+  keycloak_devfood:
+    container_name: keycloak_devfood
+    image: jboss/keycloak:16.1.1
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    ports:
+      - "8881:8080"
